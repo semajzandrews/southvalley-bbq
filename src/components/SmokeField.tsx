@@ -7,11 +7,14 @@ import * as THREE from "three";
  * SmokeField v2 — two-layer composite.
  *
  * Layer 1: domain-warped FBM smoke shader (atmosphere).
- * Layer 2: ~2k GPU-instanced particle motes (depth + parallax).
- * Coupling: scroll velocity drives smoke amplitude + particle drift speed.
+ * Layer 2: GPU-instanced particle motes (depth + parallax).
+ *
+ * Both layers drift on their own internal clock — no scroll coupling.
+ * Earlier versions tied drift speed to scroll velocity, which yanked the
+ * embers in unison with scroll and broke the "natural floating" illusion.
  *
  * Dark palette (matte-charcoal + ember). Mobile fallback: low device-pixel-ratio,
- * particle count halved, no scroll coupling.
+ * particle count halved.
  */
 export default function SmokeField() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,7 +58,6 @@ export default function SmokeField() {
 
     const smokeUniforms = {
       u_time:        { value: 0 },
-      u_scrollVel:   { value: 0 },
       u_resolution:  { value: new THREE.Vector2(container.clientWidth, container.clientHeight) },
       u_char:        { value: new THREE.Color(0x0e0b09) },
       u_ember:       { value: new THREE.Color(0xc44a24) },
@@ -81,7 +83,6 @@ export default function SmokeField() {
           precision highp float;
           varying vec2 v_uv;
           uniform float u_time;
-          uniform float u_scrollVel;
           uniform vec2  u_resolution;
           uniform vec3  u_char;
           uniform vec3  u_ember;
@@ -132,8 +133,10 @@ export default function SmokeField() {
             vec2 uv = v_uv;
             vec2 p = vec2(uv.x * ar, uv.y);
 
-            // base time, accelerated by scroll velocity
-            float t = u_time * (0.06 + abs(u_scrollVel) * 0.15);
+            // Natural drift only — scroll-coupling was removed because it
+            // yanked the smoke instead of letting it float. Real smoke doesn't
+            // speed up when the viewer moves.
+            float t = u_time * 0.06;
             vec2 drift = vec2(sin(t * 0.7) * 0.18, -t * 0.55);
 
             float dense   = warpedFbm(p * 2.4 + drift);
@@ -191,7 +194,6 @@ export default function SmokeField() {
 
     const partUniforms = {
       u_time:      { value: 0 },
-      u_scrollVel: { value: 0 },
       u_ember:     { value: new THREE.Color(0xc44a24) },
       u_bone:      { value: new THREE.Color(0xece2cc) },
       u_pixelRatio:{ value: renderer.getPixelRatio() },
@@ -206,14 +208,15 @@ export default function SmokeField() {
       vertexShader: /* glsl */ `
         attribute float seed;
         uniform float u_time;
-        uniform float u_scrollVel;
         uniform float u_pixelRatio;
         varying float v_seed;
         varying float v_life;
 
         void main() {
           v_seed = seed;
-          float t = u_time * (0.18 + abs(u_scrollVel) * 0.2) + seed * 12.0;
+          // Natural drift only — scroll-coupling removed; embers float
+          // independent of viewer motion.
+          float t = u_time * 0.18 + seed * 12.0;
 
           // upward drift with side sway
           vec3 p = position;
@@ -257,23 +260,8 @@ export default function SmokeField() {
     particles.frustumCulled = false;
     scene.add(particles);
 
-    // ─── Scroll velocity → uniforms ─────────────────────────────────────────
-
-    // Scroll velocity is computed inside animate() — once per frame, not
-    // once per scroll event. The handler now only marks the latest position;
-    // the rAF tick does the math. On a 120Hz trackpad this drops dozens of
-    // synchronous calculations per scroll burst.
-    let lastScrollY = window.scrollY;
-    let lastScrollT = performance.now();
-    let scrollVel = 0;
-    let pendingScrollY = window.scrollY;
-
-    const onScroll = () => {
-      pendingScrollY = window.scrollY;
-    };
-    if (!isMobile) window.addEventListener("scroll", onScroll, { passive: true });
-
     // ─── Animate ────────────────────────────────────────────────────────────
+    // Scroll coupling was removed — smoke and embers drift at their own pace.
 
     let raf = 0;
     let isVisible = true;
@@ -305,42 +293,24 @@ export default function SmokeField() {
 
       const now = performance.now();
 
-      // First frame after a pause — rebase all clocks so neither the smoke
-      // shader nor the scroll-velocity math sees a multi-second jump.
-      // Without this, returning to the hero (e.g. anchor jump to #blue-room
-      // then scroll back up) produces a visible flame glitch on resume.
+      // First frame after a pause — rebase the shader clock so u_time
+      // doesn't see a multi-second jump and teleport the smoke field.
       if (pausedAt !== null) {
         const pausedFor = now - pausedAt;
         start += pausedFor;
-        lastScrollT = now;
-        lastScrollY = pendingScrollY;
         pausedAt = null;
       }
 
       const t = (now - start) / 1000;
 
-      // Scroll velocity — computed once per frame from latest scrollY,
-      // not once per scroll event.
-      const dt = Math.max(1, now - lastScrollT);
-      const dy = pendingScrollY - lastScrollY;
-      const inst = dy / dt;
-      scrollVel = scrollVel * 0.85 + inst * 0.15;
-      scrollVel = Math.max(-0.6, Math.min(0.6, scrollVel));
-      lastScrollY = pendingScrollY;
-      lastScrollT = now;
-
       smokeUniforms.u_time.value = t;
-      smokeUniforms.u_scrollVel.value = scrollVel;
       partUniforms.u_time.value = t;
-      partUniforms.u_scrollVel.value = scrollVel;
 
       renderer.autoClear = true;
       renderer.render(smokeScene, smokeCam);
       renderer.autoClear = false;
       renderer.render(scene, camera);
 
-      // decay scroll velocity when scroll stops
-      scrollVel *= 0.94;
       raf = requestAnimationFrame(animate);
     };
     animate();
@@ -358,7 +328,6 @@ export default function SmokeField() {
 
     return () => {
       window.removeEventListener("resize", onResize);
-      if (!isMobile) window.removeEventListener("scroll", onScroll);
       document.removeEventListener("visibilitychange", onVis);
       io.disconnect();
       cancelAnimationFrame(raf);
