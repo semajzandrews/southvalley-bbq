@@ -1,0 +1,524 @@
+@import "tailwindcss";
+
+/* ─── South Valley v2 — Smokehouse After Hours ────────────────────────────────
+   Anti-pattern vs BWYW: BWYW=jet-black/lime/Fraunces/Inter/glassmorph/01-02-03.
+   v2: matte-charcoal/ember+amber+oxblood/Bricolage Grotesque variable/
+       Instrument Serif/IBM Plex Mono/ledger menu/time-coded chapters/
+       reverse-contrast wordmark/per-chapter color shift.
+─────────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* charcoal substrate */
+  --char:         #0e0b09;
+  --char-2:       #15110e;
+  --char-3:       #1d1813;
+  --smoke:        #2a2420;
+  --smoke-2:      #3a322a;
+
+  /* bone (text on dark) */
+  --bone:         #ece2cc;
+  --bone-2:       #c9bea7;
+  --bone-3:       #a89c84;
+  --ash:          #6b5f54;
+  --ash-2:        #8a7f72;
+
+  /* per-chapter accents */
+  --ember:        #c44a24;   /* Smoke chapter — primary */
+  --ember-deep:   #8b2c12;
+  --ember-glow:   #e36336;
+  --amber:        #e08a2c;   /* Night chapter */
+  --amber-deep:   #b86a14;
+  --oxblood:      #6f1f12;   /* Room chapter */
+  --oxblood-deep: #471006;
+
+  /* paper rules */
+  --rule:         rgba(236, 226, 204, 0.10);
+  --rule-strong:  rgba(236, 226, 204, 0.28);
+  --rule-ember:   rgba(196, 74, 36, 0.55);
+
+  /* Volume system — three weight stops driven by server time */
+  --vol-quiet:    340;
+  --vol-live:     560;
+  --vol-late:     780;
+  --vol-active:   var(--vol-live);
+}
+
+@theme inline {
+  --color-char: var(--char);
+  --color-char-2: var(--char-2);
+  --color-char-3: var(--char-3);
+  --color-smoke: var(--smoke);
+  --color-bone: var(--bone);
+  --color-bone-2: var(--bone-2);
+  --color-bone-3: var(--bone-3);
+  --color-ash: var(--ash);
+  --color-ember: var(--ember);
+  --color-ember-deep: var(--ember-deep);
+  --color-amber: var(--amber);
+  --color-oxblood: var(--oxblood);
+}
+
+/* ─── Substrate ──────────────────────────────────────────────────────────── */
+
+html, body {
+  background: var(--char);
+  color: var(--bone);
+  font-family: var(--font-instrument), "Iowan Old Style", Georgia, serif;
+  font-feature-settings: "kern", "liga", "calt", "onum", "ss01";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* paper grain — subtle warm noise over the charcoal */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.30;
+  mix-blend-mode: screen;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.78' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.92  0 0 0 0 0.86  0 0 0 0 0.74  0 0 0 0.05 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* warm vignette — concentrate heat low-center */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(60% 50% at 50% 110%, rgba(196,74,36,0.16) 0%, rgba(196,74,36,0) 60%);
+}
+
+/* ─── Type system ────────────────────────────────────────────────────────── */
+
+/* Display — Bricolage Grotesque variable. Weight driven by Volume system. */
+.display {
+  font-family: var(--font-bricolage), "Helvetica Neue", sans-serif;
+  font-variation-settings: "wght" var(--vol-active), "opsz" 96;
+  letter-spacing: -0.018em;
+  line-height: 0.92;
+  color: var(--bone);
+}
+
+/* Reverse-contrast wordmark — handled in SVG component, this is the fallback */
+.wordmark {
+  font-family: var(--font-bricolage), sans-serif;
+  font-variation-settings: "wght" 720, "opsz" 96;
+  letter-spacing: 0.02em;
+  line-height: 0.86;
+  color: var(--bone);
+  text-transform: uppercase;
+}
+
+/* Editorial body */
+.body-editorial {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-size: 17px;
+  line-height: 1.62;
+  color: var(--bone-2);
+  letter-spacing: 0.004em;
+}
+
+.body-editorial em,
+.body-editorial i {
+  font-style: italic;
+  color: var(--bone);
+}
+
+.dropcap::first-letter {
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 5.4em;
+  float: left;
+  line-height: 0.82;
+  padding: 0.08em 0.14em 0 0;
+  color: var(--ember);
+}
+
+/* Mono — metadata, ledger, time-coded chapter markers */
+.mono {
+  font-family: var(--font-plex-mono), "Menlo", monospace;
+  font-feature-settings: "ss01", "ss02";
+  letter-spacing: 0;
+}
+
+.kicker {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.masthead-rule {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  color: var(--bone-3);
+}
+
+/* Chapter marker — "5PM · The Smoke" */
+.chapter-time {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ember);
+  line-height: 0.96;
+}
+
+.chapter-name {
+  font-family: var(--font-instrument), serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.1rem, 1.8vw, 1.4rem);
+  color: var(--bone-2);
+  letter-spacing: 0.01em;
+}
+
+/* ─── Primitives ─────────────────────────────────────────────────────────── */
+
+.editorial-rule { height: 1px; background: var(--rule); }
+.editorial-rule-strong { height: 1px; background: var(--rule-strong); }
+.editorial-rule-ember { height: 1px; background: var(--rule-ember); }
+.editorial-rule-thick { height: 2px; background: var(--bone); }
+
+.chapter-section {
+  padding-top: clamp(7rem, 14vh, 12rem);
+  padding-bottom: clamp(7rem, 14vh, 12rem);
+}
+
+/* ─── Per-chapter palette shifts ─────────────────────────────────────────── */
+
+.chapter-smoke {
+  background: linear-gradient(180deg, var(--char) 0%, var(--char-2) 100%);
+}
+
+.chapter-room {
+  background:
+    radial-gradient(80% 60% at 80% 40%, rgba(111,31,18,0.32) 0%, rgba(111,31,18,0) 60%),
+    var(--char-2);
+}
+
+.chapter-room .chapter-time { color: var(--oxblood); filter: brightness(1.4); }
+
+.chapter-night {
+  background:
+    radial-gradient(70% 50% at 30% 70%, rgba(224,138,44,0.18) 0%, rgba(224,138,44,0) 60%),
+    var(--char);
+}
+
+.chapter-night .chapter-time { color: var(--amber); }
+
+/* ─── Ledger menu ────────────────────────────────────────────────────────── */
+
+.ledger-section {
+  border-top: 1px solid var(--rule-strong);
+  padding-top: 1.25rem;
+}
+
+.ledger-section-label {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 1.2rem;
+}
+
+.ledger-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  padding: 0.55rem 0;
+}
+
+.ledger-row-name {
+  font-family: var(--font-instrument), serif;
+  font-size: 18px;
+  color: var(--bone);
+  letter-spacing: 0.002em;
+}
+
+.ledger-row-note {
+  font-family: var(--font-instrument), serif;
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--bone-3);
+  margin-left: 0.6rem;
+}
+
+.ledger-leader {
+  flex: 1;
+  position: relative;
+  height: 1em;
+}
+
+.ledger-leader::before {
+  content: "";
+  position: absolute;
+  bottom: 0.35em;
+  left: 0;
+  right: 0;
+  border-bottom: 1px dotted var(--bone-3);
+  opacity: 0.45;
+}
+
+.ledger-row-price {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 14px;
+  color: var(--bone-2);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* ─── DOORS · DOWNBEAT · LAST CALL strip ─────────────────────────────────── */
+
+.time-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--rule-strong);
+  border-top: 1px solid var(--rule-strong);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.time-strip > div {
+  background: var(--char-2);
+  padding: 1rem 1.25rem;
+  text-align: center;
+}
+
+.time-strip-label {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--bone-3);
+}
+
+.time-strip-value {
+  font-family: var(--font-bricolage), sans-serif;
+  font-variation-settings: "wght" 600, "opsz" 96;
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  color: var(--bone);
+  margin-top: 0.25rem;
+  letter-spacing: -0.01em;
+}
+
+/* ─── Calendar-tear date block (Lineup index) ────────────────────────────── */
+
+.date-tear {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: var(--char-3);
+  border: 1px solid var(--rule-strong);
+  padding: 0.6rem 1.1rem 0.8rem;
+  min-width: 5rem;
+}
+
+.date-tear-month {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.date-tear-day {
+  font-family: var(--font-bricolage), sans-serif;
+  font-variation-settings: "wght" 720, "opsz" 96;
+  font-size: clamp(2.8rem, 4vw, 3.6rem);
+  line-height: 1;
+  color: var(--bone);
+  letter-spacing: -0.04em;
+  margin-top: 0.1rem;
+}
+
+.date-tear-dow {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-3);
+  margin-top: 0.15rem;
+}
+
+/* ─── Lineup marquee (bottom ticker) ─────────────────────────────────────── */
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 60s linear infinite;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0 2rem;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--bone-2);
+  white-space: nowrap;
+}
+
+.marquee-item-accent {
+  color: var(--ember);
+}
+
+.marquee-sep {
+  color: var(--ash);
+}
+
+/* ─── Reservation pill (sticky) ──────────────────────────────────────────── */
+
+.reservation-pill {
+  position: fixed;
+  bottom: 4.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.7rem 1.1rem 0.7rem 1.4rem;
+  background: var(--ember);
+  color: var(--bone);
+  border: 1px solid var(--ember-glow);
+  border-radius: 999px;
+  box-shadow: 0 14px 40px rgba(196, 74, 36, 0.35);
+  cursor: pointer;
+  transition: background 220ms ease, transform 220ms ease, box-shadow 220ms ease;
+  text-decoration: none;
+}
+
+.reservation-pill:hover {
+  background: var(--ember-deep);
+  transform: translateY(-2px);
+  box-shadow: 0 18px 50px rgba(196, 74, 36, 0.45);
+}
+
+.reservation-pill-label {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.reservation-pill-time {
+  font-family: var(--font-bricolage), sans-serif;
+  font-variation-settings: "wght" 700, "opsz" 96;
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+
+.reservation-pill-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(236, 226, 204, 0.3);
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+.btn-ember {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  background: var(--ember);
+  color: var(--bone);
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 14px 22px;
+  border: none;
+  cursor: pointer;
+  transition: background 220ms ease, transform 220ms ease;
+}
+.btn-ember:hover { background: var(--ember-deep); transform: translateY(-1px); }
+
+.btn-bone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  background: transparent;
+  color: var(--bone);
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  padding: 13px 21px;
+  border: 1px solid var(--rule-strong);
+  cursor: pointer;
+  transition: background 220ms ease, border-color 220ms ease;
+}
+.btn-bone:hover { background: var(--char-3); border-color: var(--bone); }
+
+/* ─── Selection / scrollbar ──────────────────────────────────────────────── */
+
+::selection { background: var(--ember); color: var(--bone); }
+
+/* ─── Ingredient sidebar (Garden & Gun callout) ──────────────────────────── */
+
+.ingredient-rail {
+  border-left: 1px solid var(--rule-ember);
+  padding: 0.4rem 0 0.4rem 1.4rem;
+}
+
+.ingredient-rail-label {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ember);
+  margin-bottom: 0.6rem;
+}
+
+.ingredient-rail ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.ingredient-rail li {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 13px;
+  color: var(--bone-2);
+  padding: 0.35rem 0;
+  border-bottom: 1px dotted var(--rule);
+  letter-spacing: 0.02em;
+}
+
+.ingredient-rail li:last-child { border-bottom: none; }
+
+/* ─── Arrow callout (Bon Appétit move) ───────────────────────────────────── */
+
+.arrow-callout {
+  position: relative;
+  font-family: var(--font-instrument), serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--bone-2);
+  max-width: 22ch;
+  line-height: 1.45;
+}
+
+.arrow-callout::before {
+  content: "↘";
+  display: inline-block;
+  margin-right: 0.4em;
+  color: var(--ember);
+  font-style: normal;
+}
